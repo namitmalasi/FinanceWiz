@@ -1,19 +1,40 @@
 import express from "express";
-import { auth } from "../middleware/auth.js";
 import User from "../models/User.js";
-import { calculateSIP } from "../utils/calculators.js";
+import { calculateSIP, calculateSWP } from "../utils/calculators.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
 // Calculate SIP (returns results without saving)
-router.post("/sip", auth, (req, res) => {
+router.post("/sip", (req, res) => {
   const { monthlyInvestment, expectedReturn, years } = req.body;
-  const result = calculateSIP(monthlyInvestment, expectedReturn, years);
+  const monthly = parseFloat(monthlyInvestment);
+  const annual = parseFloat(expectedReturn);
+  const yrs = parseFloat(years);
+  if (isNaN(monthly) || isNaN(annual) || isNaN(yrs)) {
+    return res.status(400).json({ message: "Invalid inputs" });
+  }
+  const result = calculateSIP(monthly, annual, yrs);
+  res.json(result);
+});
+
+router.post("/swp", (req, res) => {
+  const { corpus, annualReturnPercent, monthlyWithdrawal, years } = req.body;
+  const corpusNum = parseFloat(corpus);
+  const annualNum = parseFloat(annualReturnPercent);
+  const monthlyWithdrawNum = parseFloat(monthlyWithdrawal);
+  const yrs = parseFloat(years);
+
+  if ([corpusNum, annualNum, monthlyWithdrawNum, yrs].some((v) => isNaN(v))) {
+    return res.status(400).json({ message: "Invalid inputs" });
+  }
+
+  const result = calculateSWP(corpusNum, annualNum, monthlyWithdrawNum, yrs);
   res.json(result);
 });
 
 // Save calculation to user profile
-router.post("/save", auth, async (req, res) => {
+router.post("/save", authMiddleware, async (req, res) => {
   const userId = req.user.id;
   const { type, payload, result } = req.body;
   try {
@@ -27,8 +48,18 @@ router.post("/save", auth, async (req, res) => {
     await user.save();
     res.json({ message: "Saved" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
+router.get("/saved", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.json(user.savedCalculations || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 export default router;

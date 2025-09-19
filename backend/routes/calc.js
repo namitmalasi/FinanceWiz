@@ -1,7 +1,7 @@
 import express from "express";
 import User from "../models/User.js";
 import { calculateSIP, calculateSWP } from "../utils/calculators.js";
-import { authMiddleware } from "../middleware/auth.js";
+import { auth } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -34,7 +34,7 @@ router.post("/swp", (req, res) => {
 });
 
 // Save calculation to user profile
-router.post("/save", authMiddleware, async (req, res) => {
+router.post("/save", auth, async (req, res) => {
   const userId = req.user.id;
   const { type, payload, result } = req.body;
   try {
@@ -53,7 +53,7 @@ router.post("/save", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/saved", authMiddleware, async (req, res) => {
+router.get("/saved", auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     res.json(user.savedCalculations || []);

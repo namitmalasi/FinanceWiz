@@ -1,5 +1,6 @@
 import { useAuth } from "../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
+import TransactionsPanel from "../components/TransactionsPanel.jsx";
 
 export default function Dashboard() {
   const { logout, user } = useAuth();
@@ -22,7 +23,12 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
-      {/* rest of dashboard */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TransactionsPanel />
+        <div>
+          {/* keep your calculators here (SIP, SWP) or other widgets */}
+        </div>
+      </div>
     </div>
   );
 }

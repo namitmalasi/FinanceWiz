@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.js";
 import calcRoutes from "./routes/calc.js";
 import { connectDB } from "./utils/db.js";
 import transactionRoutes from "./routes/transactions.js";
+import budgetRoutes from "./routes/Budget.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/calc", calcRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/budgets", budgetRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
